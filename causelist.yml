@@ -1,0 +1,38 @@
+name: BHC Causelist Daily Check
+
+on:
+  schedule:
+    # Runs at 8:00 AM IST (2:30 AM UTC) every weekday Mon–Fri
+    - cron: '30 2 * * 1-5'
+
+  # Also lets you trigger it manually from GitHub's Actions tab anytime
+  workflow_dispatch:
+
+jobs:
+  check-causelist:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          pip install playwright pdfplumber
+
+      - name: Install Playwright browser
+        run: |
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: Run causelist automation
+        env:
+          EMAIL_SENDER:   ${{ secrets.EMAIL_SENDER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        run: |
+          python bhc_causelist_automation.py
